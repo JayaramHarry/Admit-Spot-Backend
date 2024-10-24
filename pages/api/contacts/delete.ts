@@ -1,15 +1,20 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import db from '../../../utils/db';
-import {authMiddleware} from '../../../utils/auth';
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
-  authMiddleware(req, res, async (user) => {
-    const { id } = req.body;
+const deleteHandler = async (req: NextApiRequest, res: NextApiResponse) => {
+  const { id } = req.query;
 
-    await db('contacts')
-      .where({ id, user_id: user.id })
-      .update({ deleted_at: new Date().toISOString() });
+  if (!id) {
+    return res.status(400).json({ error: 'ID is required' });
+  }
 
-    res.status(200).json({ message: 'Contact soft-deleted successfully' });
-  });
+  try {
+    await db.data.delete({ where: { id: Number(id) } });
+    res.status(204).json({});
+  } catch (error) {
+    console.error(error); // Log the error for server-side debugging
+    res.status(500).json({ error: 'Failed to delete data' }); // Optionally, include error.message for more details
+  }
 };
+
+export default deleteHandler;

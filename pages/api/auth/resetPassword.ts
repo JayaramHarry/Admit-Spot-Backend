@@ -3,7 +3,7 @@ import db from '../../../utils/db';
 import nodemailer from 'nodemailer';
 import bcrypt from 'bcrypt';
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
+const resetPasswordHandler = async (req: NextApiRequest, res: NextApiResponse) => {
   const { email, newPassword } = req.body;
 
   const user = await db('users').where({ email }).first();
@@ -20,11 +20,17 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     },
   });
 
-  await transporter.sendMail({
-    to: email,
-    subject: 'Password Reset',
-    text: 'Your password has been reset successfully.',
-  });
-
-  res.status(200).json({ message: 'Password reset successfully' });
+  try {
+    await transporter.sendMail({
+      to: email,
+      subject: 'Password Reset',
+      text: 'Your password has been reset successfully.',
+    });
+    res.status(200).json({ message: 'Password reset successfully' });
+  } catch (err) {
+    console.error('Error sending email:', err); // Use the error
+    res.status(500).json({ message: 'Error sending email' });
+  }
 };
+
+export default resetPasswordHandler;

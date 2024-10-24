@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import db from '../../../utils/db';
-import authMiddleware from '../../../utils/auth';
+import {authMiddleware} from '../../../utils/auth';
 import Joi from 'joi';
 
 const batchSchema = Joi.array().items(
@@ -13,7 +13,7 @@ const batchSchema = Joi.array().items(
   })
 );
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
+const batchContacts = async (req: NextApiRequest, res: NextApiResponse) => {
   authMiddleware(req, res, async (user) => {
     const contacts = req.body;
 
@@ -30,7 +30,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
               created_at: new Date().toISOString(),
             })
             .onConflict('email')
-            .merge(); // Update if the email exists
+            .merge();
         }
       });
 
@@ -40,3 +40,5 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     }
   });
 };
+
+export default batchContacts;
